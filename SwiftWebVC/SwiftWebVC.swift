@@ -77,6 +77,8 @@ public class SwiftWebVC: UIViewController {
     
     var navBarTitle: UILabel!
     
+    var buttonOptionset: SwiftWebVCButtonOptionSet = .all
+    
     ////////////////////////////////////////////////
     
     deinit {
@@ -86,17 +88,18 @@ public class SwiftWebVC: UIViewController {
         webView.navigationDelegate = nil;
     }
     
-    public convenience init(urlString: String) {
-        self.init(pageURL: URL(string: urlString)!)
+    public convenience init(urlString: String, buttonOptionset: SwiftWebVCButtonOptionSet = .all) {
+        self.init(pageURL: URL(string: urlString)!, buttonOptionset: buttonOptionset)
     }
     
-    public convenience init(pageURL: URL) {
-        self.init(aRequest: URLRequest(url: pageURL))
+    public convenience init(pageURL: URL, buttonOptionset: SwiftWebVCButtonOptionSet = .all) {
+        self.init(aRequest: URLRequest(url: pageURL), buttonOptionset: buttonOptionset)
     }
     
-    public convenience init(aRequest: URLRequest) {
+    public convenience init(aRequest: URLRequest, buttonOptionset: SwiftWebVCButtonOptionSet = .all) {
         self.init()
         self.request = aRequest
+        self.buttonOptionset = buttonOptionset
     }
     
     func loadRequest(_ request: URLRequest) {
@@ -122,7 +125,7 @@ public class SwiftWebVC: UIViewController {
         navBarTitle = UILabel()
         navBarTitle.backgroundColor = UIColor.clear
         if presentingViewController == nil {
-            if let titleAttributes = navigationController!.navigationBar.titleTextAttributes {
+            if let titleAttributes = navigationController?.navigationBar.titleTextAttributes {
                 navBarTitle.textColor = titleAttributes["NSColor"] as! UIColor
             }
         }
@@ -136,19 +139,16 @@ public class SwiftWebVC: UIViewController {
         
         super.viewWillAppear(true)
         
-        if (UIDevice.current.userInterfaceIdiom == UIUserInterfaceIdiom.phone) {
-            self.navigationController?.setToolbarHidden(false, animated: false)
-        }
-        else if (UIDevice.current.userInterfaceIdiom == UIUserInterfaceIdiom.pad) {
-            self.navigationController?.setToolbarHidden(true, animated: true)
-        }
+        let showToolbar = UIDevice.current.userInterfaceIdiom == .phone && !buttonOptionset.isEmpty
+        self.navigationController?.setToolbarHidden(!showToolbar, animated: false)
     }
     
     override public func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(true)
         
-        if (UIDevice.current.userInterfaceIdiom == UIUserInterfaceIdiom.phone) {
-            self.navigationController?.setToolbarHidden(true, animated: true)
+        if let navigationController = self.navigationController, !navigationController.isToolbarHidden {
+            navigationController.setToolbarHidden(true, animated: true)
+
         }
     }
     
@@ -161,52 +161,71 @@ public class SwiftWebVC: UIViewController {
     // Toolbar
     
     func updateToolbarItems() {
+        guard !buttonOptionset.isEmpty else {
+            return
+        }
+        
         backBarButtonItem.isEnabled = webView.canGoBack
         forwardBarButtonItem.isEnabled = webView.canGoForward
         
-        
         let refreshStopBarButtonItem: UIBarButtonItem = webView.isLoading ? stopBarButtonItem : refreshBarButtonItem
         
-        let fixedSpace: UIBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.fixedSpace, target: nil, action: nil)
-        let flexibleSpace: UIBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.flexibleSpace, target: nil, action: nil)
-        
-        if (UIDevice.current.userInterfaceIdiom == UIUserInterfaceIdiom.pad) {
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            let flexibleSpace: UIBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.flexibleSpace, target: nil, action: nil)
             
-            let toolbarWidth: CGFloat = 250.0
+            var items: [UIBarButtonItem] = [flexibleSpace]
+            
+            if self.buttonOptionset.contains(.course) {
+                items.append(backBarButtonItem)
+                items.append(flexibleSpace)
+                items.append(forwardBarButtonItem)
+                items.append(flexibleSpace)
+            }
+            if self.buttonOptionset.contains(.refresh) {
+                items.append(refreshStopBarButtonItem)
+                items.append(flexibleSpace)
+            }
+            if self.buttonOptionset.contains(.action) {
+                items.append(actionBarButtonItem)
+                items.append(flexibleSpace)
+            }
+            
+            if !closing {
+                if let navigationController = self.navigationController {
+                    if presentingViewController == nil {
+                        navigationController.toolbar.barTintColor = navigationController.navigationBar.barTintColor
+                    }
+                    else {
+                        navigationController.toolbar.barStyle = navigationController.navigationBar.barStyle
+                    }
+                    navigationController.toolbar.tintColor = navigationController.navigationBar.tintColor
+                }
+                toolbarItems = items
+            }
+        } else {
+            let fixedSpace: UIBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.fixedSpace, target: nil, action: nil)
             fixedSpace.width = 35.0
             
-            let items: NSArray = [fixedSpace, refreshStopBarButtonItem, fixedSpace, backBarButtonItem, fixedSpace, forwardBarButtonItem, fixedSpace, actionBarButtonItem]
+            var items: [UIBarButtonItem] = [fixedSpace]
             
-            let toolbar: UIToolbar = UIToolbar(frame: CGRect(x: 0.0, y: 0.0, width: toolbarWidth, height: 44.0))
-            if !closing {
-                toolbar.items = items as? [UIBarButtonItem]
-                if presentingViewController == nil {
-                    toolbar.barTintColor = navigationController!.navigationBar.barTintColor
-                }
-                else {
-                    toolbar.barStyle = navigationController!.navigationBar.barStyle
-                }
-                toolbar.tintColor = navigationController!.navigationBar.tintColor
+            if self.buttonOptionset.contains(.refresh) {
+                items.append(refreshStopBarButtonItem)
+                items.append(fixedSpace)
             }
-            navigationItem.rightBarButtonItems = items.reverseObjectEnumerator().allObjects as? [UIBarButtonItem]
-            
-        }
-        else {
-            let items: NSArray = [fixedSpace, backBarButtonItem, flexibleSpace, forwardBarButtonItem, flexibleSpace, refreshStopBarButtonItem, flexibleSpace, actionBarButtonItem, fixedSpace]
-            
-            if !closing {
-                if presentingViewController == nil {
-                    navigationController!.toolbar.barTintColor = navigationController!.navigationBar.barTintColor
-                }
-                else {
-                    navigationController!.toolbar.barStyle = navigationController!.navigationBar.barStyle
-                }
-                navigationController!.toolbar.tintColor = navigationController!.navigationBar.tintColor
-                toolbarItems = items as? [UIBarButtonItem]
+            if self.buttonOptionset.contains(.course) {
+                items.append(backBarButtonItem)
+                items.append(fixedSpace)
+                items.append(forwardBarButtonItem)
+                items.append(fixedSpace)
             }
+            if self.buttonOptionset.contains(.action) {
+                items.append(actionBarButtonItem)
+                items.append(fixedSpace)
+            }
+
+            navigationItem.setRightBarButtonItems(items.reversed(), animated: true)
         }
     }
-    
     
     ////////////////////////////////////////////////
     // Target Actions
@@ -305,6 +324,18 @@ extension SwiftWebVC: WKNavigationDelegate {
         UIApplication.shared.isNetworkActivityIndicatorVisible = false
         updateToolbarItems()
     }
+}
+
+
+public struct SwiftWebVCButtonOptionSet: OptionSet {
+    public let rawValue: Int
+    public init(rawValue:Int) {
+        self.rawValue = rawValue
+    }
     
+    public static let course      = SwiftWebVCButtonOptionSet(rawValue: 1 << 0)
+    public static let refresh         = SwiftWebVCButtonOptionSet(rawValue: 1 << 1)
+    public static let action      = SwiftWebVCButtonOptionSet(rawValue: 1 << 2)
     
+    public static let all: SwiftWebVCButtonOptionSet = [.course, .refresh, .action]
 }
