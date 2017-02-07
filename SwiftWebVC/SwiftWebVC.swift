@@ -13,15 +13,19 @@ public protocol SwiftWebVCDelegate: class {
     func didFinishLoading(success: Bool)
 }
 
-public class SwiftWebVC: UIViewController {
+open class SwiftWebVC: UIViewController {
     
-    public weak var delegate: SwiftWebVCDelegate?
+    public weak var navigationDelegate: WKNavigationDelegate?
+    public var overriddenTitle: String? {
+        didSet {
+            self.title = self.overriddenTitle
+        }
+    }
     var storedStatusColor: UIBarStyle?
-    var buttonColor: UIColor? = nil
-    var titleColor: UIColor? = nil
-    var closing: Bool! = false
+    public var buttonColor: UIColor? = nil
+    var closing: Bool = false
     
-    lazy var backBarButtonItem: UIBarButtonItem =  {
+    open lazy var backBarButtonItem: UIBarButtonItem =  {
         var tempBackBarButtonItem = UIBarButtonItem(image: SwiftWebVC.bundledImage(named: "SwiftWebVCBack"),
                                                     style: UIBarButtonItemStyle.plain,
                                                     target: self,
@@ -31,7 +35,7 @@ public class SwiftWebVC: UIViewController {
         return tempBackBarButtonItem
     }()
     
-    lazy var forwardBarButtonItem: UIBarButtonItem =  {
+    open lazy var forwardBarButtonItem: UIBarButtonItem =  {
         var tempForwardBarButtonItem = UIBarButtonItem(image: SwiftWebVC.bundledImage(named: "SwiftWebVCNext"),
                                                        style: UIBarButtonItemStyle.plain,
                                                        target: self,
@@ -41,7 +45,7 @@ public class SwiftWebVC: UIViewController {
         return tempForwardBarButtonItem
     }()
     
-    lazy var refreshBarButtonItem: UIBarButtonItem = {
+    open lazy var refreshBarButtonItem: UIBarButtonItem = {
         var tempRefreshBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.refresh,
                                                        target: self,
                                                        action: #selector(SwiftWebVC.reloadTapped(_:)))
@@ -49,7 +53,7 @@ public class SwiftWebVC: UIViewController {
         return tempRefreshBarButtonItem
     }()
     
-    lazy var stopBarButtonItem: UIBarButtonItem = {
+    open lazy var stopBarButtonItem: UIBarButtonItem = {
         var tempStopBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.stop,
                                                     target: self,
                                                     action: #selector(SwiftWebVC.stopTapped(_:)))
@@ -57,7 +61,7 @@ public class SwiftWebVC: UIViewController {
         return tempStopBarButtonItem
     }()
     
-    lazy var actionBarButtonItem: UIBarButtonItem = {
+    open lazy var actionBarButtonItem: UIBarButtonItem = {
         var tempActionBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.action,
                                                       target: self,
                                                       action: #selector(SwiftWebVC.actionButtonTapped(_:)))
@@ -65,19 +69,20 @@ public class SwiftWebVC: UIViewController {
         return tempActionBarButtonItem
     }()
     
+    open lazy var webViewConfiguration: WKWebViewConfiguration = {
+        return WKWebViewConfiguration()
+    }()
     
-    lazy var webView: WKWebView = {
-        var tempWebView = WKWebView(frame: UIScreen.main.bounds)
+    open lazy var webView: WKWebView = {
+        var tempWebView = WKWebView(frame: UIScreen.main.bounds, configuration: self.webViewConfiguration)
         tempWebView.uiDelegate = self
         tempWebView.navigationDelegate = self
-        return tempWebView;
+        return tempWebView
     }()
     
     var request: URLRequest!
     
-    var navBarTitle: UILabel!
-    
-    var buttonOptionset: SwiftWebVCButtonOptionSet = .all
+    public var buttonOptionSet: SwiftWebVCbuttonOptionSet
     
     ////////////////////////////////////////////////
     
@@ -88,18 +93,22 @@ public class SwiftWebVC: UIViewController {
         webView.navigationDelegate = nil;
     }
     
-    public convenience init(urlString: String, buttonOptionset: SwiftWebVCButtonOptionSet = .all) {
-        self.init(pageURL: URL(string: urlString)!, buttonOptionset: buttonOptionset)
+    public convenience init(urlString: String, buttonOptionSet: SwiftWebVCbuttonOptionSet = .all) {
+        self.init(pageURL: URL(string: urlString)!, buttonOptionSet: buttonOptionSet)
     }
     
-    public convenience init(pageURL: URL, buttonOptionset: SwiftWebVCButtonOptionSet = .all) {
-        self.init(aRequest: URLRequest(url: pageURL), buttonOptionset: buttonOptionset)
+    public convenience init(pageURL: URL, buttonOptionSet: SwiftWebVCbuttonOptionSet = .all) {
+        self.init(aRequest: URLRequest(url: pageURL), buttonOptionSet: buttonOptionSet)
     }
     
-    public convenience init(aRequest: URLRequest, buttonOptionset: SwiftWebVCButtonOptionSet = .all) {
-        self.init()
+    public init(aRequest: URLRequest, buttonOptionSet: SwiftWebVCbuttonOptionSet = .all) {
+        self.buttonOptionSet = buttonOptionSet
+        super.init(nibName: nil, bundle: nil)
         self.request = aRequest
-        self.buttonOptionset = buttonOptionset
+    }
+    
+    public required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
     func loadRequest(_ request: URLRequest) {
@@ -109,41 +118,26 @@ public class SwiftWebVC: UIViewController {
     ////////////////////////////////////////////////
     // View Lifecycle
     
-    override public func loadView() {
+    override open func loadView() {
         view = webView
         loadRequest(request)
     }
     
-    override public func viewDidLoad() {
+    override open func viewDidLoad() {
         super.viewDidLoad()
         updateToolbarItems()
     }
     
-    override public func viewWillAppear(_ animated: Bool) {
+    override open func viewWillAppear(_ animated: Bool) {
         assert(self.navigationController != nil, "SVWebViewController needs to be contained in a UINavigationController. If you are presenting SVWebViewController modally, use SVModalWebViewController instead.")
-        
-        navBarTitle = UILabel()
-        navBarTitle.backgroundColor = UIColor.clear
-        if presentingViewController == nil {
-            if let titleAttributes = navigationController?.navigationBar.titleTextAttributes {
-                navBarTitle.textColor = titleAttributes["NSColor"] as! UIColor
-            }
-        }
-        else {
-            navBarTitle.textColor = self.titleColor
-        }
-        navBarTitle.shadowOffset = CGSize(width: 0, height: 1);
-        navBarTitle.font = UIFont(name: "HelveticaNeue-Medium", size: 17.0)
-        
-        navigationItem.titleView = navBarTitle;
         
         super.viewWillAppear(true)
         
-        let showToolbar = UIDevice.current.userInterfaceIdiom == .phone && !buttonOptionset.isEmpty
+        let showToolbar = UIDevice.current.userInterfaceIdiom == .phone && !buttonOptionSet.isEmpty
         self.navigationController?.setToolbarHidden(!showToolbar, animated: false)
     }
     
-    override public func viewWillDisappear(_ animated: Bool) {
+    override open func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(true)
         
         if let navigationController = self.navigationController, !navigationController.isToolbarHidden {
@@ -152,7 +146,7 @@ public class SwiftWebVC: UIViewController {
         }
     }
     
-    override public func viewDidDisappear(_ animated: Bool) {
+    override open func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(true)
         UIApplication.shared.isNetworkActivityIndicatorVisible = false
     }
@@ -161,7 +155,7 @@ public class SwiftWebVC: UIViewController {
     // Toolbar
     
     func updateToolbarItems() {
-        guard !buttonOptionset.isEmpty else {
+        guard !buttonOptionSet.isEmpty else {
             return
         }
         
@@ -169,26 +163,28 @@ public class SwiftWebVC: UIViewController {
         forwardBarButtonItem.isEnabled = webView.canGoForward
         
         let refreshStopBarButtonItem: UIBarButtonItem = webView.isLoading ? stopBarButtonItem : refreshBarButtonItem
+        let fixedSpace: UIBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.fixedSpace, target: nil, action: nil)
         
         if UIDevice.current.userInterfaceIdiom == .phone {
             let flexibleSpace: UIBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.flexibleSpace, target: nil, action: nil)
             
-            var items: [UIBarButtonItem] = [flexibleSpace]
+            var items: [UIBarButtonItem] = []
             
-            if self.buttonOptionset.contains(.course) {
+            if self.buttonOptionSet.contains(.course) {
                 items.append(backBarButtonItem)
-                items.append(flexibleSpace)
                 items.append(forwardBarButtonItem)
-                items.append(flexibleSpace)
             }
-            if self.buttonOptionset.contains(.refresh) {
+            if self.buttonOptionSet.contains(.refresh) {
                 items.append(refreshStopBarButtonItem)
-                items.append(flexibleSpace)
             }
-            if self.buttonOptionset.contains(.action) {
+            if self.buttonOptionSet.contains(.action) {
                 items.append(actionBarButtonItem)
-                items.append(flexibleSpace)
             }
+            
+            items = items.map({ [$0, flexibleSpace]}).flatMap({ $0 })
+            items = Array(items.dropLast())
+            items.insert(fixedSpace, at: 0)
+            items.append(fixedSpace)
             
             if !closing {
                 if let navigationController = self.navigationController {
@@ -203,22 +199,21 @@ public class SwiftWebVC: UIViewController {
                 toolbarItems = items
             }
         } else {
-            let fixedSpace: UIBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.fixedSpace, target: nil, action: nil)
             fixedSpace.width = 35.0
             
             var items: [UIBarButtonItem] = [fixedSpace]
             
-            if self.buttonOptionset.contains(.refresh) {
+            if self.buttonOptionSet.contains(.refresh) {
                 items.append(refreshStopBarButtonItem)
                 items.append(fixedSpace)
             }
-            if self.buttonOptionset.contains(.course) {
+            if self.buttonOptionSet.contains(.course) {
                 items.append(backBarButtonItem)
                 items.append(fixedSpace)
                 items.append(forwardBarButtonItem)
                 items.append(fixedSpace)
             }
-            if self.buttonOptionset.contains(.action) {
+            if self.buttonOptionSet.contains(.action) {
                 items.append(actionBarButtonItem)
                 items.append(fixedSpace)
             }
@@ -272,9 +267,11 @@ public class SwiftWebVC: UIViewController {
     
     ////////////////////////////////////////////////
     
-    func doneButtonTapped() {
+    public func doneButtonTapped() {
         closing = true
-        UINavigationBar.appearance().barStyle = storedStatusColor!
+        if let storedStatusColor = self.storedStatusColor {
+            UINavigationBar.appearance().barStyle = storedStatusColor
+        }
         self.dismiss(animated: true, completion: nil)
     }
 
@@ -283,7 +280,7 @@ public class SwiftWebVC: UIViewController {
     /// Helper function to get image within SwiftWebVCResources bundle
     ///
     /// - parameter named: The name of the image in the SwiftWebVCResources bundle
-    class func bundledImage(named: String) -> UIImage? {
+    public class func bundledImage(named: String) -> UIImage? {
         let image = UIImage(named: named)
         if image == nil {
             return UIImage(named: named, in: Bundle(for: SwiftWebVC.classForCoder()), compatibleWith: nil)
@@ -302,40 +299,49 @@ extension SwiftWebVC: WKUIDelegate {
 extension SwiftWebVC: WKNavigationDelegate {
     
     public func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-        self.delegate?.didStartLoading()
+        self.navigationDelegate?.webView?(webView, didStartProvisionalNavigation: navigation)
         UIApplication.shared.isNetworkActivityIndicatorVisible = true
         updateToolbarItems()
     }
     
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        self.delegate?.didFinishLoading(success: true)
+        self.navigationDelegate?.webView?(webView, didFinish: navigation)
         UIApplication.shared.isNetworkActivityIndicatorVisible = false
         
         webView.evaluateJavaScript("document.title", completionHandler: {(response, error) in
-            self.navBarTitle.text = response as! String?
-            self.navBarTitle.sizeToFit()
+            if let title = response as? String, self.overriddenTitle == nil {
+                self.title = title
+            }
             self.updateToolbarItems()
         })
         
     }
     
     public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        self.delegate?.didFinishLoading(success: false)
+        self.navigationDelegate?.webView?(webView, didFail: navigation, withError: error)
         UIApplication.shared.isNetworkActivityIndicatorVisible = false
         updateToolbarItems()
+    }
+    
+    public func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+        if self.navigationDelegate?.responds(to: #selector(webView(_:decidePolicyFor:decisionHandler:))) ?? false {
+            self.navigationDelegate?.webView?(webView, decidePolicyFor: navigationResponse, decisionHandler: decisionHandler)
+        } else {
+            decisionHandler(.allow)
+        }
     }
 }
 
 
-public struct SwiftWebVCButtonOptionSet: OptionSet {
+public struct SwiftWebVCbuttonOptionSet: OptionSet {
     public let rawValue: Int
     public init(rawValue:Int) {
         self.rawValue = rawValue
     }
     
-    public static let course      = SwiftWebVCButtonOptionSet(rawValue: 1 << 0)
-    public static let refresh         = SwiftWebVCButtonOptionSet(rawValue: 1 << 1)
-    public static let action      = SwiftWebVCButtonOptionSet(rawValue: 1 << 2)
+    public static let course      = SwiftWebVCbuttonOptionSet(rawValue: 1 << 0)
+    public static let refresh         = SwiftWebVCbuttonOptionSet(rawValue: 1 << 1)
+    public static let action      = SwiftWebVCbuttonOptionSet(rawValue: 1 << 2)
     
-    public static let all: SwiftWebVCButtonOptionSet = [.course, .refresh, .action]
+    public static let all: SwiftWebVCbuttonOptionSet = [.course, .refresh, .action]
 }
