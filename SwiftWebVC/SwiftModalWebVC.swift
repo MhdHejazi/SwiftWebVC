@@ -45,17 +45,14 @@ public class SwiftModalWebVC: UINavigationController {
         case .lightBlue:
             doneButton.tintColor = nil
             webViewController.buttonColor = nil
-            webViewController.titleColor = UIColor.black
             UINavigationBar.appearance().barStyle = UIBarStyle.default
         case .lightBlack:
             doneButton.tintColor = UIColor.darkGray
             webViewController.buttonColor = UIColor.darkGray
-            webViewController.titleColor = UIColor.black
             UINavigationBar.appearance().barStyle = UIBarStyle.default
         case .dark:
             doneButton.tintColor = UIColor.white
             webViewController.buttonColor = UIColor.white
-            webViewController.titleColor = UIColor.groupTableViewBackground
             UINavigationBar.appearance().barStyle = UIBarStyle.black
         }
         
