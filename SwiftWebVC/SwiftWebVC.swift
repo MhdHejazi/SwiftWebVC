@@ -298,13 +298,13 @@ extension SwiftWebVC: WKUIDelegate {
 
 extension SwiftWebVC: WKNavigationDelegate {
     
-    public func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+    open func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
         self.navigationDelegate?.webView?(webView, didStartProvisionalNavigation: navigation)
         UIApplication.shared.isNetworkActivityIndicatorVisible = true
         updateToolbarItems()
     }
     
-    public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+    open func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         self.navigationDelegate?.webView?(webView, didFinish: navigation)
         UIApplication.shared.isNetworkActivityIndicatorVisible = false
         
@@ -317,13 +317,13 @@ extension SwiftWebVC: WKNavigationDelegate {
         
     }
     
-    public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+    open func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         self.navigationDelegate?.webView?(webView, didFail: navigation, withError: error)
         UIApplication.shared.isNetworkActivityIndicatorVisible = false
         updateToolbarItems()
     }
     
-    public func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+    open func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
         if self.navigationDelegate?.responds(to: #selector(webView(_:decidePolicyFor:decisionHandler:))) ?? false {
             self.navigationDelegate?.webView?(webView, decidePolicyFor: navigationResponse, decisionHandler: decisionHandler)
         } else {
