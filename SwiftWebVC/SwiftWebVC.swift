@@ -188,13 +188,9 @@ open class SwiftWebVC: UIViewController {
             
             if !closing {
                 if let navigationController = self.navigationController {
-                    if presentingViewController == nil {
-                        navigationController.toolbar.barTintColor = navigationController.navigationBar.barTintColor
-                    }
-                    else {
-                        navigationController.toolbar.barStyle = navigationController.navigationBar.barStyle
-                    }
+                    navigationController.toolbar.barTintColor = navigationController.navigationBar.barTintColor
                     navigationController.toolbar.tintColor = navigationController.navigationBar.tintColor
+                    navigationController.toolbar.isTranslucent = navigationController.navigationBar.isTranslucent
                 }
                 toolbarItems = items
             }
