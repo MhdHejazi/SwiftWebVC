@@ -197,21 +197,30 @@ open class SwiftWebVC: UIViewController {
         } else {
             fixedSpace.width = 35.0
             
-            var items: [UIBarButtonItem] = [fixedSpace]
+            let addSpace: Bool = self.splitViewController == nil
+            
+            var items: [UIBarButtonItem] = addSpace ? [fixedSpace] : []
             
             if self.buttonOptionSet.contains(.refresh) {
                 items.append(refreshStopBarButtonItem)
-                items.append(fixedSpace)
+                if addSpace {
+                    items.append(fixedSpace)
+                }
             }
             if self.buttonOptionSet.contains(.course) {
                 items.append(backBarButtonItem)
-                items.append(fixedSpace)
+                if addSpace {
+                    items.append(fixedSpace)
+                }
                 items.append(forwardBarButtonItem)
-                items.append(fixedSpace)
-            }
+                if addSpace {
+                    items.append(fixedSpace)
+                }            }
             if self.buttonOptionSet.contains(.action) {
                 items.append(actionBarButtonItem)
-                items.append(fixedSpace)
+                if addSpace {
+                    items.append(fixedSpace)
+                }
             }
 
             navigationItem.setRightBarButtonItems(items.reversed(), animated: true)
