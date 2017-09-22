@@ -230,24 +230,24 @@ open class SwiftWebVC: UIViewController {
     ////////////////////////////////////////////////
     // Target Actions
     
-    func goBackTapped(_ sender: UIBarButtonItem) {
+    @objc func goBackTapped(_ sender: UIBarButtonItem) {
         webView.goBack()
     }
     
-    func goForwardTapped(_ sender: UIBarButtonItem) {
+    @objc func goForwardTapped(_ sender: UIBarButtonItem) {
         webView.goForward()
     }
     
-    func reloadTapped(_ sender: UIBarButtonItem) {
+    @objc func reloadTapped(_ sender: UIBarButtonItem) {
         webView.reload()
     }
     
-    func stopTapped(_ sender: UIBarButtonItem) {
+    @objc func stopTapped(_ sender: UIBarButtonItem) {
         webView.stopLoading()
         updateToolbarItems()
     }
     
-    func actionButtonTapped(_ sender: AnyObject) {
+    @objc func actionButtonTapped(_ sender: AnyObject) {
         
         if let url: URL = ((webView.url != nil) ? webView.url : request.url) {
             let activities: NSArray = [SwiftWebVCActivitySafari(), SwiftWebVCActivityChrome()]
@@ -272,7 +272,7 @@ open class SwiftWebVC: UIViewController {
     
     ////////////////////////////////////////////////
     
-    public func doneButtonTapped() {
+    @objc public func doneButtonTapped() {
         closing = true
         if let storedStatusColor = self.storedStatusColor {
             UINavigationBar.appearance().barStyle = storedStatusColor
@@ -344,9 +344,9 @@ public struct SwiftWebVCbuttonOptionSet: OptionSet {
         self.rawValue = rawValue
     }
     
-    public static let course      = SwiftWebVCbuttonOptionSet(rawValue: 1 << 0)
-    public static let refresh         = SwiftWebVCbuttonOptionSet(rawValue: 1 << 1)
-    public static let action      = SwiftWebVCbuttonOptionSet(rawValue: 1 << 2)
+    public static let course = SwiftWebVCbuttonOptionSet(rawValue: 1 << 0)
+    public static let refresh = SwiftWebVCbuttonOptionSet(rawValue: 1 << 1)
+    public static let action = SwiftWebVCbuttonOptionSet(rawValue: 1 << 2)
     
     public static let all: SwiftWebVCbuttonOptionSet = [.course, .refresh, .action]
 }
