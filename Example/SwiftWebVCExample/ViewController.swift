@@ -29,17 +29,17 @@ class ViewController: UIViewController {
     
     // MARK: Modal
     @IBAction func presentModalWithDefaultTheme() {
-        let webVC = SwiftModalWebVC(urlString: "https://www.google.com")
+        let webVC = SwiftModalWebVC(urlString: "www.google.com")
         self.present(webVC, animated: true, completion: nil)
     }
     
     @IBAction func presentModalWithLightBlackTheme() {
-        let webVC = SwiftModalWebVC(urlString: "https://www.google.com", theme: .lightBlack)
+        let webVC = SwiftModalWebVC(urlString: "https://www.google.com", theme: .lightBlack, dismissButtonStyle: .cross)
         self.present(webVC, animated: true, completion: nil)
     }
     
     @IBAction func presentModalWithDarkTheme() {
-        let webVC = SwiftModalWebVC(urlString: "https://www.google.com", theme: .dark)
+        let webVC = SwiftModalWebVC(urlString: "https://www.google.com", theme: .dark, dismissButtonStyle: .arrow)
         self.present(webVC, animated: true, completion: nil)
     }
 

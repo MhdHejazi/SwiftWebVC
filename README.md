@@ -1,10 +1,6 @@
 # SwiftWebVC
 
-**Updated for iOS 10 & Swift 3.0.**
-
 SwiftWebVC is a simple inline browser for your Swift iOS app.
-
-**Disclaimer:** SwiftWebVC is a Swift implementation of [Sam Vermette's SVWebViewController](https://github.com/samvermette/SVWebViewController/).
 
 ![SwiftWebVC](https://cloud.githubusercontent.com/assets/6603912/8509772/e1a1f2b6-22b0-11e5-878d-273b5b17b95a.png)
 
@@ -30,6 +26,25 @@ it, simply add the following line to your Podfile:
 ```ruby
 pod 'SwiftWebVC'
 ```
+
+**Carthage**
+
+[Carthage](https://github.com/Carthage/Carthage) is a decentralized dependency manager that builds your dependencies and provides you with binary frameworks.
+
+You can install Carthage with [Homebrew](http://brew.sh/) using the following command:
+
+```bash
+$ brew update
+$ brew install carthage
+```
+
+To integrate SwiftWebVC into your Xcode project using Carthage, specify it in your `Cartfile`:
+
+```ogdl
+github "meismyles/SwiftWebVC"
+```
+
+Run `carthage update` to build the framework and drag the built `SwiftWebVC.framework` into your Xcode project.
 
 **Manual**
 
@@ -98,3 +113,5 @@ Starting in iOS 6 Apple uses `UIActivity` to let you show additional sharing met
 SwiftWebVC is a Swift implementation of [Sam Vermette's SVWebViewController](https://github.com/samvermette/SVWebViewController/). Code transcription, updates and changes were carried out by Myles Ringle. The original SVWebViewController was brought to you by [Sam Vermette](http://samvermette.com) and [contributors to the project](https://github.com/samvermette/SVWebViewController/contributors).
 
 If you have feature suggestions or bug reports, feel free to help out by sending pull requests or by [creating new issues](https://github.com/meismyles/SwiftWebVC/issues/new). If you're using SwiftWebVC in your project, attribution is always appreciated.
+
+Thanks to [Icons8](https://icons8.com/) for the images.
