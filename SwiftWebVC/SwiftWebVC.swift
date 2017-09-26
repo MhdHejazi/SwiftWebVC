@@ -15,15 +15,16 @@ public protocol SwiftWebVCDelegate: class {
 
 open class SwiftWebVC: UIViewController {
     
-    public weak var navigationDelegate: WKNavigationDelegate?
     public var overriddenTitle: String? {
         didSet {
             self.title = self.overriddenTitle
         }
     }
-    var storedStatusColor: UIBarStyle?
+    public weak var navigationDelegate: WKNavigationDelegate?
+    public var storedStatusColor: UIBarStyle?
     public var buttonColor: UIColor? = nil
-    var closing: Bool = false
+    public var titleColor: UIColor? = nil
+    public var closing: Bool = false
     
     open lazy var backBarButtonItem: UIBarButtonItem =  {
         var tempBackBarButtonItem = UIBarButtonItem(image: SwiftWebVC.bundledImage(named: "SwiftWebVCBack"),
@@ -83,17 +84,21 @@ open class SwiftWebVC: UIViewController {
     var request: URLRequest!
     
     public var buttonOptionSet: SwiftWebVCbuttonOptionSet
-    
+
     ////////////////////////////////////////////////
     
     deinit {
         webView.stopLoading()
         UIApplication.shared.isNetworkActivityIndicatorVisible = false
-        webView.uiDelegate = nil;
-        webView.navigationDelegate = nil;
+        webView.uiDelegate = nil
+        webView.navigationDelegate = nil
     }
     
     public convenience init(urlString: String, buttonOptionSet: SwiftWebVCbuttonOptionSet = .all) {
+        var urlString = urlString
+        if !urlString.hasPrefix("https://") && !urlString.hasPrefix("http://") {
+            urlString = "https://"+urlString
+        }
         self.init(pageURL: URL(string: urlString)!, buttonOptionSet: buttonOptionSet)
     }
     
@@ -123,14 +128,13 @@ open class SwiftWebVC: UIViewController {
         loadRequest(request)
     }
     
-    override open func viewDidLoad() {
+    open override func viewDidLoad() {
         super.viewDidLoad()
-        updateToolbarItems()
+        self.updateToolbarItems()
     }
     
     override open func viewWillAppear(_ animated: Bool) {
         assert(self.navigationController != nil, "SVWebViewController needs to be contained in a UINavigationController. If you are presenting SVWebViewController modally, use SVModalWebViewController instead.")
-        
         super.viewWillAppear(true)
         
         let showToolbar = UIDevice.current.userInterfaceIdiom == .phone && !buttonOptionSet.isEmpty
@@ -139,10 +143,8 @@ open class SwiftWebVC: UIViewController {
     
     override open func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(true)
-        
         if let navigationController = self.navigationController, !navigationController.isToolbarHidden {
             navigationController.setToolbarHidden(true, animated: true)
-
         }
     }
     
@@ -192,7 +194,7 @@ open class SwiftWebVC: UIViewController {
                     navigationController.toolbar.tintColor = navigationController.navigationBar.tintColor
                     navigationController.toolbar.isTranslucent = navigationController.navigationBar.isTranslucent
                 }
-                toolbarItems = items
+                self.toolbarItems = items
             }
         } else {
             fixedSpace.width = 35.0
@@ -222,8 +224,7 @@ open class SwiftWebVC: UIViewController {
                     items.append(fixedSpace)
                 }
             }
-
-            navigationItem.setRightBarButtonItems(items.reversed(), animated: true)
+            self.navigationItem.setRightBarButtonItems(items.reversed(), animated: true)
         }
     }
     
@@ -328,9 +329,35 @@ extension SwiftWebVC: WKNavigationDelegate {
         updateToolbarItems()
     }
     
+    open func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        if let navigationDelegate = self.navigationDelegate {
+            navigationDelegate.webView?(webView, decidePolicyFor: navigationAction, decisionHandler: decisionHandler)
+        } else {
+            guard let url = navigationAction.request.url else {
+                return
+            }
+            
+            if navigationAction.targetFrame == nil {
+                if UIApplication.shared.canOpenURL(url) {
+                    UIApplication.shared.openURL(url)
+                }
+            }
+            
+            if url.host == "itunes.apple.com" || ["tel", "telprompt", "sms", "mailto"].contains(url.scheme ?? "") {
+                if UIApplication.shared.canOpenURL(url) {
+                    UIApplication.shared.openURL(url)
+                    decisionHandler(.cancel)
+                    return
+                }
+            }
+            
+            decisionHandler(.allow)
+        }
+    }
+    
     open func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-        if self.navigationDelegate?.responds(to: #selector(webView(_:decidePolicyFor:decisionHandler:))) ?? false {
-            self.navigationDelegate?.webView?(webView, decidePolicyFor: navigationResponse, decisionHandler: decisionHandler)
+        if let navigationDelegate = self.navigationDelegate {
+            navigationDelegate.webView?(webView, decidePolicyFor: navigationResponse, decisionHandler: decisionHandler)
         } else {
             decisionHandler(.allow)
         }
