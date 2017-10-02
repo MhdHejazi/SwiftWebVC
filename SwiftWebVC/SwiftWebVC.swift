@@ -81,7 +81,22 @@ open class SwiftWebVC: UIViewController {
         return tempWebView
     }()
     
-    var request: URLRequest!
+    open var url: URL! {
+        get {
+            return self.request.url
+        }
+        set {
+            if self.url != newValue {
+                self.request = URLRequest(url: newValue)
+            }
+        }
+    }
+    
+    var request: URLRequest! {
+        didSet {
+            self.loadRequest(self.request)
+        }
+    }
     
     public var buttonOptionSet: SwiftWebVCbuttonOptionSet
 
