@@ -330,37 +330,24 @@ extension SwiftWebVC: WKNavigationDelegate {
     }
     
     open func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        if let navigationDelegate = self.navigationDelegate {
-            navigationDelegate.webView?(webView, decidePolicyFor: navigationAction, decisionHandler: decisionHandler)
-        } else {
-            guard let url = navigationAction.request.url else {
+        guard self.navigationDelegate?.webView?(webView, decidePolicyFor: navigationAction, decisionHandler: decisionHandler) == nil else {
+            return
+        }
+        if let url = navigationAction.request.url, navigationAction.targetFrame == nil || url.host == "itunes.apple.com" || ["tel", "telprompt", "sms", "mailto"].contains(url.scheme ?? "") {
+            if UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.openURL(url)
+                decisionHandler(.cancel)
                 return
             }
-            
-            if navigationAction.targetFrame == nil {
-                if UIApplication.shared.canOpenURL(url) {
-                    UIApplication.shared.openURL(url)
-                }
-            }
-            
-            if url.host == "itunes.apple.com" || ["tel", "telprompt", "sms", "mailto"].contains(url.scheme ?? "") {
-                if UIApplication.shared.canOpenURL(url) {
-                    UIApplication.shared.openURL(url)
-                    decisionHandler(.cancel)
-                    return
-                }
-            }
-            
-            decisionHandler(.allow)
         }
+        decisionHandler(.allow)
     }
     
     open func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
-        if let navigationDelegate = self.navigationDelegate {
-            navigationDelegate.webView?(webView, decidePolicyFor: navigationResponse, decisionHandler: decisionHandler)
-        } else {
-            decisionHandler(.allow)
+        guard self.navigationDelegate?.webView?(webView, decidePolicyFor: navigationResponse, decisionHandler: decisionHandler) == nil else {
+            return
         }
+        decisionHandler(.allow)
     }
 }
 
