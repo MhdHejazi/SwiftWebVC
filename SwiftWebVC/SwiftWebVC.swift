@@ -331,6 +331,7 @@ extension SwiftWebVC: WKNavigationDelegate {
     
     open func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         guard self.navigationDelegate?.webView?(webView, decidePolicyFor: navigationAction, decisionHandler: decisionHandler) == nil else {
+            self.updateToolbarItems()
             return
         }
         if let url = navigationAction.request.url, navigationAction.targetFrame == nil || url.host == "itunes.apple.com" || ["tel", "telprompt", "sms", "mailto"].contains(url.scheme ?? "") {
@@ -340,10 +341,12 @@ extension SwiftWebVC: WKNavigationDelegate {
                 return
             }
         }
+        self.updateToolbarItems()
         decisionHandler(.allow)
     }
     
     open func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+        self.updateToolbarItems()
         guard self.navigationDelegate?.webView?(webView, decidePolicyFor: navigationResponse, decisionHandler: decisionHandler) == nil else {
             return
         }
