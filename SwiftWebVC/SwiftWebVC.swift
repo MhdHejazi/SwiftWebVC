@@ -25,6 +25,7 @@ open class SwiftWebVC: UIViewController {
     public var buttonColor: UIColor? = nil
     public var titleColor: UIColor? = nil
     public var closing: Bool = false
+    public var closingCallback: (() -> Void)? = nil
     
     open lazy var backBarButtonItem: UIBarButtonItem =  {
         var tempBackBarButtonItem = UIBarButtonItem(image: SwiftWebVC.bundledImage(named: "SwiftWebVCBack"),
@@ -290,6 +291,7 @@ open class SwiftWebVC: UIViewController {
     
     @objc public func doneButtonTapped() {
         closing = true
+        closingCallback?()
         if let storedStatusColor = self.storedStatusColor {
             UINavigationBar.appearance().barStyle = storedStatusColor
         }
