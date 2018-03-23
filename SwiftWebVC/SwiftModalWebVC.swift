@@ -81,6 +81,12 @@ public class SwiftModalWebVC: UINavigationController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override public func dismiss(animated flag: Bool, completion: (() -> Void)?) {
+        if self.presentedViewController != nil {
+            super.dismiss(animated: flag, completion: completion)
+        }
+    }
+    
     override public func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(false)
     }
