@@ -292,6 +292,8 @@ open class SwiftWebVC: UIViewController {
     @objc public func doneButtonTapped() {
         closing = true
         closingCallback?()
+        closingCallback = nil
+
         if let storedStatusColor = self.storedStatusColor {
             UINavigationBar.appearance().barStyle = storedStatusColor
         }
