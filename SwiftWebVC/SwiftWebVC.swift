@@ -29,7 +29,7 @@ open class SwiftWebVC: UIViewController {
     
     open lazy var backBarButtonItem: UIBarButtonItem =  {
         var tempBackBarButtonItem = UIBarButtonItem(image: SwiftWebVC.bundledImage(named: "SwiftWebVCBack"),
-                                                    style: UIBarButtonItemStyle.plain,
+													style: UIBarButtonItem.Style.plain,
                                                     target: self,
                                                     action: #selector(SwiftWebVC.goBackTapped(_:)))
         tempBackBarButtonItem.width = 18.0
@@ -39,7 +39,7 @@ open class SwiftWebVC: UIViewController {
     
     open lazy var forwardBarButtonItem: UIBarButtonItem =  {
         var tempForwardBarButtonItem = UIBarButtonItem(image: SwiftWebVC.bundledImage(named: "SwiftWebVCNext"),
-                                                       style: UIBarButtonItemStyle.plain,
+													   style: UIBarButtonItem.Style.plain,
                                                        target: self,
                                                        action: #selector(SwiftWebVC.goForwardTapped(_:)))
         tempForwardBarButtonItem.width = 18.0
@@ -48,7 +48,7 @@ open class SwiftWebVC: UIViewController {
     }()
     
     open lazy var refreshBarButtonItem: UIBarButtonItem = {
-        var tempRefreshBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.refresh,
+		var tempRefreshBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.refresh,
                                                        target: self,
                                                        action: #selector(SwiftWebVC.reloadTapped(_:)))
         tempRefreshBarButtonItem.tintColor = self.buttonColor
@@ -56,7 +56,7 @@ open class SwiftWebVC: UIViewController {
     }()
     
     open lazy var stopBarButtonItem: UIBarButtonItem = {
-        var tempStopBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.stop,
+		var tempStopBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.stop,
                                                     target: self,
                                                     action: #selector(SwiftWebVC.stopTapped(_:)))
         tempStopBarButtonItem.tintColor = self.buttonColor
@@ -64,7 +64,7 @@ open class SwiftWebVC: UIViewController {
     }()
     
     open lazy var actionBarButtonItem: UIBarButtonItem = {
-        var tempActionBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.action,
+		var tempActionBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.action,
                                                       target: self,
                                                       action: #selector(SwiftWebVC.actionButtonTapped(_:)))
         tempActionBarButtonItem.tintColor = self.buttonColor
@@ -181,10 +181,10 @@ open class SwiftWebVC: UIViewController {
         forwardBarButtonItem.isEnabled = webView.canGoForward
         
         let refreshStopBarButtonItem: UIBarButtonItem = webView.isLoading ? stopBarButtonItem : refreshBarButtonItem
-        let fixedSpace: UIBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.fixedSpace, target: nil, action: nil)
+		let fixedSpace: UIBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.fixedSpace, target: nil, action: nil)
         
         if UIDevice.current.userInterfaceIdiom == .phone {
-            let flexibleSpace: UIBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonSystemItem.flexibleSpace, target: nil, action: nil)
+			let flexibleSpace: UIBarButtonItem = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.flexibleSpace, target: nil, action: nil)
             
             var items: [UIBarButtonItem] = []
             
